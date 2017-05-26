@@ -30,10 +30,30 @@ public class Main {
             connect();
             createTable();
             fill();
+            if (args.length > 0)
+                handleArgs(args);
+            else
+                System.out.println("No args");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             disconnect();
+        }
+    }
+
+    private static void handleArgs(String[] args) throws SQLException {
+        switch (args[0]) {
+            case "/cost":
+                select("SELECT title, cost FROM products WHERE title = '" + args[1] + "';");
+                break;
+            case "/changecost":
+                update("UPDATE products SET cost = " + args[2] + " WHERE title = '" + args[1] + "';");
+                break;
+            case "/productsbycost":
+                select("SELECT title, cost FROM products WHERE cost >= " + args[1] + " AND cost <= " + args[2] + ";");
+                break;
+            default:
+                System.out.println("Invalid command!");
         }
     }
 
@@ -64,6 +84,25 @@ public class Main {
             ps.addBatch();
         }
         ps.executeBatch();
+        connection.commit();
+    }
+
+    private static void select(String query) throws SQLException {
+        boolean flag = true;
+        ps = connection.prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            flag = false;
+            System.out.println(rs.getString("title") + "\t" + rs.getInt("cost"));
+        }
+        if (flag)
+            System.out.println("Products were not found");
+    }
+
+    private static void update(String query) throws SQLException {
+        ps = connection.prepareStatement(query);
+        if (ps.executeUpdate() == 0)
+            System.out.println("Products were not found");
         connection.commit();
     }
 
