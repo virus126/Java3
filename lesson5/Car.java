@@ -13,6 +13,7 @@ public class Car implements Runnable {
     private int speed;
     private String name;
     private CountDownLatch isReady;
+    private CountDownLatch Started;
     private Lock lockWinner;
     private CountDownLatch isFinish;
 
@@ -24,12 +25,13 @@ public class Car implements Runnable {
         return speed;
     }
 
-    public Car(Race race, int speed, CountDownLatch isReady, Lock lockWinner, CountDownLatch isFinish) {
+    public Car(Race race, int speed, CountDownLatch isReady, CountDownLatch Started, Lock lockWinner, CountDownLatch isFinish) {
         this.race = race;
         this.speed = speed;
         CARS_COUNT++;
         this.name = "Участник #" + CARS_COUNT;
         this.isReady = isReady;
+        this.Started = Started;
         this.lockWinner = lockWinner;
         this.isFinish = isFinish;
     }
@@ -41,7 +43,7 @@ public class Car implements Runnable {
             Thread.sleep(500 + (int)(Math.random() * 800));
             System.out.println(this.name + " готов");
             isReady.countDown();
-            isReady.await();
+            Started.await();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -51,7 +53,14 @@ public class Car implements Runnable {
         isFinish.countDown();
         if (lockWinner.tryLock()) {
             lockWinner.lock();
-            System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Победитель гонки - " + name + "!!!");
+            try {
+                System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Победитель гонки - " + name + "!!!");
+                isFinish.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                lockWinner.unlock();
+            }
         }
     }
 }
