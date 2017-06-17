@@ -43,12 +43,4 @@ public class Main {
         }
         return isThere1 && isThere4;
     }
-
-//    public static void main(String[] args) {
-//        Main main = new Main();
-//        int[] arr = main.task1(new int[] { 1, 2, 4, 4, 2, 3, 4, 1, 7});
-//        for (int i = 0; i < arr.length; i++) {
-//            System.out.println(arr[i]);
-//        }
-//    }
 }
